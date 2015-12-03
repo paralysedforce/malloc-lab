@@ -161,37 +161,41 @@ void mm_free(void *ptr)
  * mm_realloc - Implemented simply in terms of mm_malloc and mm_free
  */
 void *mm_realloc(void *ptr, size_t size){
-    if (ptr == NULL)
-        return mm_malloc(size);
-    else if (size == 0){
-        mm_free(ptr);
-        return ptr;
-    }
-    else {
-        size_t payloadSize = GET_SIZE(HDRP(ptr) - WSIZE);
-        size_t copySize = MIN(size, payloadSize);
-        void *oldptr = ptr;
-        mm_free(ptr);
-        ptr = mm_malloc(copySize);
-        memcpy(ptr, oldptr, copySize);
-        return ptr;
-    }
-
-}
 //    void *oldptr = ptr;
 //    void *newptr;
 //    size_t copySize;
-//    
-//    newptr = mm_malloc(size);
-//    if (newptr == NULL)
-//      return NULL;
-//    copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
-//    if (size < copySize)
-//      copySize = size;
-//    memcpy(newptr, oldptr, copySize);
-//    mm_free(oldptr);
-//    return newptr;
+//
+//    if (ptr == NULL)
+//        return mm_malloc(size);
+//    else if (size == 0){
+//        mm_free(ptr);
+//        return ptr;
+//    }
+//    else {
+//        size_t payloadSize = GET_SIZE(HDRP(ptr) - WSIZE);
+//        copySize = MIN(ALIGN(size), payloadSize);
+//        *oldptr = ptr;
+//        mm_free(ptr);
+//        newptr = mm_malloc(copySize);
+//        memcpy(ptr, oldptr, copySize);
+//        return newptr;
+//    }
+//
 //}
+    void *oldptr = ptr;
+    void *newptr;
+    size_t copySize;
+    
+    newptr = mm_malloc(size);
+    if (newptr == NULL)
+      return NULL;
+    copySize = GET_SIZE(HDRP(oldptr));
+    if (size < copySize)
+      copySize = size;
+    memcpy(newptr, oldptr, copySize);
+    mm_free(oldptr);
+    return newptr;
+}
 /*
  * Helper Functions
  */
@@ -293,7 +297,7 @@ int mm_check(void){
     void *bp; int count = 0;
     for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)){
         printf("\tBlock %d\n", count);
-        printf("\tLOCATION 0x%x\n", (unsigned int)bp);
+        printf("\t\tLOCATION 0x%x\n", (unsigned int)bp);
         printf("\t\tSIZE: %d\n", GET_SIZE(HDRP(bp)));
         printf("\t\tALLOC: %d\n", GET_ALLOC(HDRP(bp)));
         count++;
